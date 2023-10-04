@@ -36,6 +36,15 @@ const (
 	Ace   = Face("Ace")
 )
 const BurstThreshold = 22
+const DealerStopThreashold = 17
+
+type WinStatus string
+
+const (
+	Player = WinStatus("Player")
+	Dealer = WinStatus("Dealer")
+	Draw   = WinStatus("Draw")
+)
 
 type Facenum struct {
 	face Face
@@ -52,7 +61,7 @@ func Init0() []Card {
 	faces := []Face{
 		Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King,
 	}
-	nums := [13]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 11}
+	nums := [13]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10}
 
 	var facenum []Facenum
 	for i := 0; i < 13; i++ {
@@ -105,7 +114,7 @@ func Calc(hands []Card) int {
 	sums := []int{0}
 	for _, card := range hands {
 		var lst []int
-		for s := range sums {
+		for _, s := range sums {
 			for _, num := range card.facenum.nums {
 				lst = append(lst, s+num)
 			}
@@ -124,4 +133,30 @@ func Calc(hands []Card) int {
 		res = BurstThreshold
 	}
 	return res
+}
+
+func IsBurst(num int) bool {
+	return num >= BurstThreshold
+}
+
+func IsDealerStopped(num int) bool {
+	return num >= DealerStopThreashold
+}
+
+func GetWinStatus(player []Card, dealer []Card) WinStatus {
+	pnum := Calc(player)
+	dnum := Calc(dealer)
+	if IsBurst(pnum) {
+		return Dealer
+	} else if IsBurst(dnum) {
+		return Player
+		// assume that both of them is not burst
+	} else if pnum > dnum {
+		return Player
+	} else if pnum == dnum {
+		return Draw
+	} else if pnum < dnum {
+		return Dealer
+	}
+	return Dealer
 }
